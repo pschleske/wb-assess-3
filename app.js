@@ -62,13 +62,22 @@ const OTHER_FOSSILS = [
 
 // TODO: Replace this comment with your code
 app.get('/', (req, res) => {
-  res.render('homepage.html.njk')
+  const isInSess = req.session.name
+  if (isInSess) {
+    res.redirect("/top-fossils")
+  } else {
+    res.render('homepage.html.njk')
+  }
 })
 
 app.get('/top-fossils', (req, res) => {
   const sessName = req.session.name
-  res.render("top-fossils.html.njk", { fossils: Object.values(MOST_LIKED_FOSSILS), sessName });
-})
+  if (sessName) {
+    res.render("top-fossils.html.njk", { fossils: Object.values(MOST_LIKED_FOSSILS), sessName });
+  } else {
+    res.redirect('/')
+  }
+});
 
 
 app.get('/get-name', (req, res) => {
@@ -78,7 +87,7 @@ app.get('/get-name', (req, res) => {
     res.redirect('/top-fossils')
   }
 }
-)
+);
 
 // my code above
 app.get('/random-fossil.json', (req, res) => {
@@ -86,6 +95,18 @@ app.get('/random-fossil.json', (req, res) => {
   res.json(randomFossil);
 });
 
+app.post('/like-fossil', (req, res) => {
+  // Gets the fossil that was liked from the form.
+  const fossilSelect = req.body.fossil;
+  // Increases its num_likes count in the MOST_LIKED_FOSSILS object
+  if (fossilSelect === MOST_LIKED_FOSSILS[fossilSelect]) {
+    MOST_LIKED_FOSSILS[fossilSelect].num_likes++
+  }
+  // Renders the template thank - you.html.njk.This template should thank the user — so, if it was Indiana Jones, it should say Thank you, Indiana Jones.The template should also have a link back to the / top - fossils page.
+  res.render('thank-you.html.njk', { name: req.session.name })
+})
+
 ViteExpress.listen(app, port, () => {
   console.log(`Server running on http://localhost:${port}...`);
 });
+
